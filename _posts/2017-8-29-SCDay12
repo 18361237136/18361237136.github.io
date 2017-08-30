@@ -1,0 +1,49 @@
+### 1.支付内容的测试。
+
+完成。
+
+### 2.RxJava的学习
+- RxJava是单线运营商，subscribeOn以及observeOn，在那里可以指定线程，如果你正在阅读代码，你已经看到了observeOnIO线程，你知道这是在IO线程上发生的。它们易于转换，并且过滤和映射，并进行各种其他操作。
+ 
+### 3. 迁移至 HTTPS
+直接把baseUrl("http://api.yunyuer.com/")中的http改变成https
+
+### 4. 添加教务老师时从通讯录中选择
+1. 点击icon时进入到手机的通讯录界面
+
+```
+RxView.clicks(mBinding.ivContacts).compose(RxViewEvent.delay())
+                .subscribe(new Action1<Void>() {
+                    @Override
+                    public void call(Void aVoid) {
+                        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+                        //此处不能用转化为activty否则就不会执行下面的onActivityResult方法
+                        startActivityForResult(intent, 1);
+                    }
+                });
+```
+2. 下面就是设置名字和号码
+
+```
+@Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 1:
+
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri contactData = data.getData();
+                    Cursor cursor = mContext.getContentResolver().query(contactData, null, null, null, null);
+                    cursor.moveToFirst();
+
+                    String name = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+                    String phone = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+                    mBinding.nameTxt.setText(name);
+                    mBinding.phoneTxt.setText(phone);
+                    cursor.close();
+                }
+                break;
+            default:
+                break;
+        }
+```
